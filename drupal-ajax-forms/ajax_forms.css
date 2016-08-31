@@ -1,0 +1,59 @@
+#ajax-form-form-container form {
+  *zoom: 1;
+  height: 100%;
+}
+#ajax-form-form-container form:before,
+#ajax-form-form-container form:after {
+  display: block;
+  content: ".";
+  height: 0;
+  overflow: hidden;
+  visibility: hidden;
+}
+#ajax-form-form-container form:after {
+  clear: both;
+}
+#ajax-form-form-container form > div {
+  height: 100%;
+  position: relative;
+}
+#ajax-form-form-container form label {
+  font-weight: normal;
+}
+#ajax-form-form-container form input.form-text {
+  background: #eee;
+  border: 1px solid #ccc;
+  margin: 5px 0;
+  max-width: 100%;
+  padding: 5px;
+}
+#ajax-form-form-container form input#submit {
+  *zoom: 1;
+  position: absolute;
+  bottom: 0;
+  right: 0;
+}
+#ajax-form-form-container form input#submit:before,
+#ajax-form-form-container form input#submit:after {
+  display: block;
+  content: ".";
+  height: 0;
+  overflow: hidden;
+  visibility: hidden;
+}
+#ajax-form-form-container form input#submit:after {
+  clear: both;
+}
+#ajax-form-form-container form .messages-inline {
+  background: none;
+  background-color: none;
+  background-image: none;
+  border: 0;
+  font-size: 14px;
+  margin: 0 0 1em 0;
+  padding: 0;
+}
+#ajax-form-form-container form .form-item {
+  margin-top: .25em;
+  margin-bottom: .25em;
+}

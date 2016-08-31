@@ -1,0 +1,3 @@
+name = Ajax Loading Form Example
+description = Ajax form system with ajax callback and ajax loading of form
+core = 7.x

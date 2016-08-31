@@ -1,0 +1,161 @@
+<?php
+
+
+/**
+ * @return array
+ */
+function ajax_form_menu() {
+  $items = array();
+  $items['get/ajax-form'] = array(
+    'type' => MENU_CALLBACK,
+    'page callback' => 'ajax_form_overlay',
+    'delivery callback' => 'ajax_form_print_html',
+  );
+
+  return $items;
+}
+
+/**
+ * Implements hook_theme().
+ */
+function ajax_form_theme() {
+  $path = drupal_get_path('module', 'ajax_forms') . '/templates';
+  return array(
+    'ajax_form_overlay' => array(
+      'path' => $path,
+      'template' => 'ajax-form-overlay',
+      'variables' => array(
+        'content' => NULL,
+        'errors' => NULL,
+      ),
+    ),
+  );
+}
+
+/**
+ * Implements hook_preprocess_HOOK().
+ *
+ * Add js
+ */
+function ajax_form_preprocess_page($variables) {
+  // probably should just include this on the right page
+  drupal_add_js(drupal_get_path('module', 'ajax_form') . '/ajax_form.js', array('scope' => 'footer'));
+  drupal_add_css(drupal_get_path('module', 'ajax_form') . '/ajax_form.css');
+}
+
+/**
+ * Menu callback to get the ajax form.
+ */
+function ajax_form_overlay() {
+  global $user;
+
+  $content = drupal_get_form('ajax_form');
+  $errors = form_get_errors();
+
+  $output = theme('ajax_form_overlay', array(
+    'content' => $content,
+    'errors' => $errors
+  ));
+  return array(
+    '#type' => 'markup',
+    '#markup' => $output
+  );
+}
+
+/**
+ * Ajax form.
+ *
+ * @return mixed
+ */
+function ajax_form_form() {
+  // pass1 and pass2 keys are important because they match the expectations of password_confirm_validate().
+  $form['title'] = array(
+    '#type' => 'markup',
+    '#markup' => '<h4>Ajax Form Example Title</h4>',
+  );
+  $form['pass']['pass1'] = array(
+    '#type' => 'password',
+    '#title' => t('Enter Password'),
+    '#required' => TRUE,
+  );
+  $form['pass']['pass2'] = array(
+    '#type' => 'password',
+    '#title' => t('Re-Enter Password'),
+    '#required' => TRUE,
+  );
+
+  $form['#action'] = 'system/ajax';
+
+  $form['submit'] = array(
+    '#type' => 'submit',
+    '#ajax' => array(
+      'callback' => 'ajax_form_ajax_callback',
+      'wrapper' => 'ajax-form-container',
+    ),
+    '#value' => t('Submit'),
+  );
+
+  return $form;
+}
+
+/**
+ * @param $form
+ * @param $form_state
+ * @return string
+ */
+function ajax_form_print_html($page_callback_result) {
+  print drupal_render($page_callback_result);
+  drupal_exit();
+}
+
+/**
+ * Validation handler for ajax form.
+ *
+ * @param $form
+ * @param $form_state
+ */
+function ajax_form_form_validate(&$form, &$form_state) {
+  $form_state['redirect'] = FALSE;
+  // validate that the two passwords match.
+  password_confirm_validate($form['pass'], $form_state);
+
+  $errors = form_get_errors();
+  if (isset($errors['pass'])) {
+    // Set an error only on the second pass field so that the error is
+    // displayed after both password fields.
+    form_set_error('pass2', $errors['pass']);
+  }
+}
+
+/**
+ * Submit handler for ajax_form form.
+ *
+ * @param $form
+ * @param $form_state
+ */
+function ajax_form_form_submit(&$form, &$form_state) {
+  global $user;
+
+  drupal_set_message('That password worked!', 'error');
+  $form_state['redirect'] = 'user';
+}
+
+
+/**
+ * Ajax form callback.  Deliver's ajax commands to the front end using the
+ * ajax_deliver() method.
+ */
+function ajax_form_ajax_callback($form, $form_state) {
+  // If form_state redirect is set in the form_submit callback, redirect instead of
+  // delivering the form back.
+  if ($form_state['redirect']) {
+    module_load_include('inc', 'ctools', 'includes/ajax');
+    $commands[] = ctools_ajax_command_redirect($form_state['redirect']);
+  }
+  else {
+    $output = drupal_render($form);
+    $commands[] = ajax_command_replace('#ajax-form', $output);
+  }
+  ajax_deliver(array('#type' => 'ajax', '#commands' => $commands));
+  exit;
+}
