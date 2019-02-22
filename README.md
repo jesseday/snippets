@@ -1,2 +1,2 @@
 # snippets
-Random useful snippets 
+Useful snippets 
